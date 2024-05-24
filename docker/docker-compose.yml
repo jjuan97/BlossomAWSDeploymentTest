@@ -1,0 +1,44 @@
+version: "3.7"
+services:
+  test_postgress_container:
+    image: postgres
+    container_name: testPostgresSQLContainer
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./postgres.env
+    networks:
+      test-network:
+        ipv4_address: 172.20.0.2
+
+  test_api_container:
+    build: ../test-api
+    container_name: testNodeContainer
+    ports:
+      - '4000:4000'
+    command: npm run start
+    volumes:
+      - ../test-api:/app/
+    networks:
+      test-network:
+        ipv4_address: 172.20.0.3
+
+  test_app_container:
+    build: ../test-app
+    container_name: testReactContainer
+    ports:
+      - '3000:3000'
+    command: npm run start
+    volumes:
+      - ../test-app:/app/
+    networks:
+      test-network:
+        ipv4_address: 172.20.0.4
+
+networks:
+  test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
