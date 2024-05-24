@@ -22,6 +22,8 @@ services:
     networks:
       test-network:
         ipv4_address: 172.20.0.3
+    depends_on:
+      - test_postgress_container
 
   test_app_container:
     build: ../test-app
@@ -34,6 +36,8 @@ services:
     networks:
       test-network:
         ipv4_address: 172.20.0.4
+    depends_on:
+      - test_api_container
 
 networks:
   test-network:
