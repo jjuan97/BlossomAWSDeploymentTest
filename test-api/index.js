@@ -9,6 +9,14 @@ app.use(bodyParser.json());
 
 app.use(cors());
 
+app.get("/", async (req, res) => {
+  try {
+    res.json({ message: "Hello World!" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/tasks", async (req, res) => {
   try {
     const tasks = await Task.findAll();

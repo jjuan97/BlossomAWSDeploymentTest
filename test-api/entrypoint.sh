@@ -8,7 +8,6 @@ do
 done
 
 # Run database creation and migration
-npx sequelize-cli db:create
 npx sequelize-cli db:migrate
 npm install
 # Start the application

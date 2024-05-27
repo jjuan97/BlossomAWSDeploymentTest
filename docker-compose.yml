@@ -5,39 +5,55 @@ services:
     container_name: testPostgresSQLContainer
     ports:
       - "5432:5432"
-    env_file:
-      - ./postgres.env
+    environment:
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER: myusername
+      POSTGRES_DB: test-local
     networks:
       test-network:
         ipv4_address: 172.20.0.2
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myusername -d test-local"]
+      interval: 7s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - test_postgress_volume:/var/lib/postgresql/data
 
   test_api_container:
-    build: ../test-api
+    build: ./test-api
     container_name: testNodeContainer
     ports:
       - '4000:4000'
     command: npm run start
     volumes:
-      - ../test-api:/app/
+      - ./test-api:/app/
     networks:
       test-network:
         ipv4_address: 172.20.0.3
     depends_on:
-      - test_postgress_container
+      test_postgress_container:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
 
   test_app_container:
-    build: ../test-app
+    build: ./test-app
     container_name: testReactContainer
     ports:
       - '3000:3000'
     command: npm run start
     volumes:
-      - ../test-app:/app/
+      - ./test-app:/app/
     networks:
       test-network:
         ipv4_address: 172.20.0.4
     depends_on:
-      - test_api_container
+      test_api_container:
+        condition: service_healthy
 
 networks:
   test-network:
@@ -46,3 +62,6 @@ networks:
       config:
         - subnet: 172.20.0.0/16
           gateway: 172.20.0.1
+
+volumes:
+  test_postgress_volume:
