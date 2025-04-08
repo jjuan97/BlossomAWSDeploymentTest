@@ -20,6 +20,10 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: The first private subnet ID where the resources will be created
 
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: The second private subnet ID where the resources will be created
+
   DBUser:
     Description: The database admin account username
     Type: String
@@ -52,6 +56,7 @@ Resources:
       DBSubnetGroupDescription: "RDS Subnet Group"
       SubnetIds:
         - !Ref PrivateSubnet0
+        - !Ref PrivateSubnet1
 
   RDSInstance:
     Type: AWS::RDS::DBInstance

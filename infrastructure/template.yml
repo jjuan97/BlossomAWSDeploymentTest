@@ -45,6 +45,7 @@ Resources:
         AppEnv: !Ref AppEnv
         VPC: !GetAtt NetworkingStack.Outputs.VPCId
         PrivateSubnet0: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
+        PrivateSubnet1: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
         DBUser: !Ref DBUser
         RDSSecurityGroup: !GetAtt NetworkingStack.Outputs.RDSSecurityGroup
 
