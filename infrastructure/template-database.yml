@@ -63,7 +63,7 @@ Resources:
     DependsOn:
       - RDSSubnetGroup
     Properties:
-      DBName: "test-local"
+      DBName: "test_local"
       AllocatedStorage: 20
       DBInstanceClass: db.t3.micro
       Engine: postgres
