@@ -2,7 +2,7 @@ import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import axios from "axios";
 import "./App.css";
 
-const URL_API = "http://localhost:4000";
+const URL_API = import.meta.env.VITE_URL_API || "http://localhost:3000";
 
 interface Task {
   id: number;
