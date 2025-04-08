@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for ALB Resources and firewall resources
+
+Parameters:
+  AppName:
+    Description: Name of the application
+    Type: String
+    Default: blossom-deployment
+
+  AppEnv:
+    Description: Environment of the stack
+    Type: String
+    Default: dev
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: The VPC ID where the resources will be created
+
+  PublicSubnet0:
+    Type: AWS::EC2::Subnet::Id
+    Description: The first public subnet ID where the resources will be created
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: The second public subnet ID where the resources will be created
+
+  ALBSecurityGroup:
+    Description: Security group for the ALB from Networking stack
+    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${AppName}-${AppEnv}-alb"
+      Type: application
+      Scheme: internet-facing
+      Subnets:
+        - !Ref PublicSubnet0
+        - !Ref PublicSubnet1
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${AppName}-${AppEnv}-alb-tg"
+      Port: 4000
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref VPC
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: "4000"
+      HealthCheckPath: /
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ALBTargetGroup
+
+Outputs:
+  ALBEndpoint:
+    Description: The URL of the ALB
+    Value: !Sub "http://${ApplicationLoadBalancer.DNSName}"
+    Export:
+      Name: !Sub "${AWS::Region}-${AWS::StackName}-ALBEndpoint"
+
+  ALBTargetGroupARN:
+    Description: The ARN of the ALB target group
+    Value: !Ref ALBTargetGroup
+    Export:
+      Name: !Sub "${AWS::Region}-${AWS::StackName}-ALBTargetGroupARN"

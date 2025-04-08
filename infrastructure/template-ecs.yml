@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for ECS resources to deploy API
+
+Parameters:
+  AppName:
+    Description: Name of the application
+    Type: String
+    Default: blossom-deployment
+
+  AppEnv:
+    Description: Environment of the stack
+    Type: String
+    Default: dev
+
+  PrivateSubnet0:
+    Type: AWS::EC2::Subnet::Id
+    Description: The first private subnet ID where the resources will be created
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: The second private subnet ID where the resources will be created
+
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The security group ID for the ECS service
+
+Resources:
+  # ECR Repository
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: api
+
+  # ECS Resources
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: CustomECSLogPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${AppName}-${AppEnv}:*"
+
+  ECSLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${AppName}-${AppEnv}"
+      RetentionInDays: 14
+
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${AppName}-${AppEnv}-task"
+      Cpu: "256"
+      Memory: "512"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: api-container
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/api:latest"
+          PortMappings:
+            - ContainerPort: 4000
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ECSLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: api
+
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref ECSTaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - !Ref PrivateSubnet0
+            - !Ref PrivateSubnet1
+          SecurityGroups:
+            - !Ref ECSSecurityGroup
+          AssignPublicIp: ENABLED
+
+Outputs:
+  ECRRepositoryURI:
+    Description: The URI of the ECR repository
+    Value: !GetAtt ECRRepository.RepositoryUri
+    Export:
+      Name: !Sub "${AWS::Region}-${AWS::StackName}-ECRRepositoryURI"
+
+  ECRRepository:
+    Description: The name of the ECR repository
+    Value: !Ref ECRRepository
+    Export:
+      Name: !Sub "${AWS::Region}-${AWS::StackName}-ECRRepository"
+
+  ECSClusterName:
+    Description: The name of the ECS cluster
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub "${AWS::Region}-${AWS::StackName}-ECSClusterName"
+
+  ECSServiceName:
+    Description: The name of the ECS service
+    Value: !Ref ECSService
+    Export:
+      Name: !Sub "${AWS::Region}-${AWS::StackName}-ECSServicetName"

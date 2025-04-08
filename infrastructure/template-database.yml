@@ -1,11 +1,11 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Template for VPC and Subnets and other networking resources
+Description: Template for building the database stack for the application
 
 Parameters:
   AppName:
     Description: Name of the application
     Type: String
-    Default: blossom-deployment-test
+    Default: blossom-deployment
 
   AppEnv:
     Description: Environment of the stack

@@ -5,7 +5,7 @@ Parameters:
   AppName:
     Description: Name of the application
     Type: String
-    Default: blossom-deployment-test
+    Default: blossom-deployment
 
   AppEnv:
     Description: Environment of the stack
@@ -49,6 +49,35 @@ Resources:
         DBUser: !Ref DBUser
         RDSSecurityGroup: !GetAtt NetworkingStack.Outputs.RDSSecurityGroup
 
+  # ECS stack
+  ECSStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkingStack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-ecs.yml
+      Parameters:
+        AppName: !Ref AppName
+        AppEnv: !Ref AppEnv
+        PrivateSubnet0: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
+        PrivateSubnet1: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
+        ECSSecurityGroup: !GetAtt NetworkingStack.Outputs.ECSSecurityGroup
+
+  # ALB stack
+  ALBStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkingStack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-alb.yml
+      Parameters:
+        AppName: !Ref AppName
+        AppEnv: !Ref AppEnv
+        VPC: !GetAtt NetworkingStack.Outputs.VPCId
+        PublicSubnet0: !GetAtt NetworkingStack.Outputs.PublicSubnet0
+        PublicSubnet1: !GetAtt NetworkingStack.Outputs.PublicSubnet1
+        ALBSecurityGroup: !GetAtt NetworkingStack.Outputs.ALBSecurityGroup
+
 Outputs:
   # Outputs from the Networking stack
   VPCId:
@@ -79,3 +108,25 @@ Outputs:
   RDSSecretArn:
     Description: The ARN of the RDS secret
     Value: !GetAtt DatabaseStack.Outputs.RDSSecretArn
+
+  # Outputs from the ECS stack
+  ECRRepositoryURI:
+    Description: The URI of the ECR repository
+    Value: !GetAtt ECSStack.Outputs.ECRRepositoryURI
+
+  ECRRepository:
+    Description: The name of the ECR repository
+    Value: !GetAtt ECSStack.Outputs.ECRRepository
+
+  ECSClusterName:
+    Description: The name of the ECS cluster
+    Value: !GetAtt ECSStack.Outputs.ECSClusterName
+
+  ECSServiceName:
+    Description: The name of the ECS service
+    Value: !GetAtt ECSStack.Outputs.ECSServiceName
+
+  # Outputs from the ALB stack
+  ALBEndpoint:
+    Description: The URL of the ALB
+    Value: !GetAtt ALBStack.Outputs.ALBEndpoint

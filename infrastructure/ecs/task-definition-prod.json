@@ -1,0 +1,29 @@
+{
+  "family": "blossom-deployment-prod-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::782046926924:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "api-container",
+      "image": "782046926924.dkr.ecr.us-east-1.amazonaws.com/api:latest",
+      "portMappings": [
+        {
+          "containerPort": 4000,
+          "hostPort": 4000,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/blossom-deployment-prod",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "api"
+        }
+      }
+    }
+  ]
+}

@@ -5,7 +5,7 @@ Parameters:
   AppName:
     Description: Name of the application
     Type: String
-    Default: blossom-deployment-test
+    Default: blossom-deployment
 
   AppEnv:
     Description: Environment of the stack
@@ -209,10 +209,36 @@ Resources:
       GroupDescription: Enable access to the RDS DB
       VpcId: !Ref VPC
       SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: tcp
+        - IpProtocol: tcp
           ToPort: 5432
           FromPort: 5432
+          SourceSecurityGroupId: !Ref ECSSecurityGroup
+
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow ECS to access RDS and ALB
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP/HTTPS
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
 
 Outputs:
   VPCId:
@@ -256,3 +282,15 @@ Outputs:
     Value: !Ref RDSSecurityGroup
     Export:
       Name: !Sub ${AWS::Region}-${AWS::StackName}-RDSSecurityGroup
+
+  ECSSecurityGroup:
+    Description: ECSSecurityGroup Id
+    Value: !Ref ECSSecurityGroup
+    Export:
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-ECSSecurityGroup
+
+  ALBSecurityGroup:
+    Description: ALBSecurityGroup Id
+    Value: !Ref ALBSecurityGroup
+    Export:
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-ALBSecurityGroup

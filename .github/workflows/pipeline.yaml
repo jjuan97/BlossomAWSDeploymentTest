@@ -8,19 +8,16 @@ on:
       - "develop"
 
 env:
+  STACK_NAME: blossom-deployment
   TEMPLATE: template.yml
 
   # Pro Env variables
-  PROD_APP_NAME: blossom-deployment-test
+  PROD_APP_NAME: blossom-deployment
   PROD_APP_ENV: prod
   PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::782046926924:role/GithubActionsRole # TODO: send to github actions secrets
   STACK_TEMPLATES_BUCKET: stacks-templates-a758baa3
   PROD_REGION: us-east-1
   DB_USER_NAME: myusername # TODO: send to github actions secrets
-
-defaults:
-  run:
-    working-directory: ./infrastructure
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -32,6 +29,9 @@ jobs:
     name: Build and deploy Cloudformation resources to production environment
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./infrastructure
     steps:
       - uses: actions/checkout@v3
 
@@ -52,10 +52,60 @@ jobs:
       - name: Deploy cloudformation Stacks
         uses: aws-actions/aws-cloudformation-github-deploy@master
         with:
-          name: oiss-infra-dev
+          name: ${{ env.STACK_NAME }}-${{ env.PROD_APP_ENV }}
           template: ./infrastructure/${{ env.TEMPLATE }}
           capabilities: CAPABILITY_NAMED_IAM
           parameter-overrides: >-
             AppName=${{ env.PROD_APP_NAME }},
             AppEnv=${{ env.PROD_APP_ENV }},
             DBUser=${{ env.DB_USER_NAME }}
+
+  deploy-docker-image:
+    needs: deploy-prod
+    name: Build and deploy Docker image to AWS ECR and ECS
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./test-api
+    steps:
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: "false"
+
+      - name: Get ECR Repository from CloudFormation Output
+        id: get-ecr-repo
+        run: |
+          ECR_REPOSITORY=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }}-${{ env.PROD_APP_ENV }} \
+            --query "Stacks[0].Outputs[?OutputKey=='ECRRepository'].OutputValue" \
+            --output text)
+          echo "ECR_REPOSITORY=${ECR_REPOSITORY}" >> $GITHUB_ENV
+
+      - name: Build, tag, and push image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+
+      - name: Register New Task Definition
+        run: |
+          cd ../infrastructure/ecs
+          aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+      - name: Update ECS Service
+        run: |
+          ECS_CLUSTER=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }}-${{ env.PROD_APP_ENV }} \
+            --query "Stacks[0].Outputs[?OutputKey=='ECSClusterName'].OutputValue" \
+            --output text)
+          ECS_SERVICE=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }}-${{ env.PROD_APP_ENV }} \
+            --query "Stacks[0].Outputs[?OutputKey=='ECSServiceName'].OutputValue" \
+            --output text)
+          TASK_DEF=$(aws ecs describe-task-definition --task-definition blossom-deployment-prod-task --query 'taskDefinition.taskDefinitionArn' --output text)
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition $TASK_DEF
