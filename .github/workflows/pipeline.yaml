@@ -56,6 +56,6 @@ jobs:
           template: ./infrastructure/${{ env.TEMPLATE }}
           capabilities: CAPABILITY_NAMED_IAM
           parameter-overrides: >-
-            AppName=${{ env.PROD_APP_NAME }}
-            AppEnv=${{ env.PROD_APP_ENV }}
+            AppName=${{ env.PROD_APP_NAME }},
+            AppEnv=${{ env.PROD_APP_ENV }},
             DBUser=${{ env.DB_USER_NAME }}
