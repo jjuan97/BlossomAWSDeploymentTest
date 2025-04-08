@@ -53,7 +53,7 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@master
         with:
           name: oiss-infra-dev
-          template: ${{ env.TEMPLATE }}
+          template: ./infrastructure/${{ env.TEMPLATE }}
           capabilities: CAPABILITY_NAMED_IAM
           parameter-overrides: >-
             AppName=${{ env.PROD_APP_NAME }}
