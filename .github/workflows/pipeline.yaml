@@ -11,10 +11,12 @@ env:
   TEMPLATE: template.yml
 
   # Pro Env variables
+  PROD_APP_NAME: blossom-deployment-test
   PROD_APP_ENV: prod
-  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::782046926924:role/GithubActionsRole
+  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::782046926924:role/GithubActionsRole # TODO: send to github actions secrets
   STACK_TEMPLATES_BUCKET: stacks-templates-a758baa3
   PROD_REGION: us-east-1
+  DB_USER_NAME: myusername # TODO: send to github actions secrets
 
 defaults:
   run:
@@ -46,3 +48,14 @@ jobs:
       - name: Upload CloudFormation template to S3 bucket
         run: |
           aws s3 sync . s3://${{ env.STACK_TEMPLATES_BUCKET }} --region ${{ env.PROD_REGION }}
+
+      - name: Deploy cloudformation Stacks
+        uses: aws-actions/aws-cloudformation-github-deploy@master
+        with:
+          name: oiss-infra-dev
+          template: ${{ env.TEMPLATE }}
+          capabilities: CAPABILITY_NAMED_IAM
+          parameter-overrides: >-
+            AppName=${{ env.PROD_APP_NAME }}
+            AppEnv=${{ env.PROD_APP_ENV }}
+            DBUser=${{ env.DB_USER_NAME }}
