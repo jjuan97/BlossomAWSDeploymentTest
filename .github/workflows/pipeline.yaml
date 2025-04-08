@@ -1,0 +1,48 @@
+name: Pipeline to deploy infrastructure and application code to AWS
+
+on:
+  push:
+    branches:
+      - "master"
+      - "staging"
+      - "develop"
+
+env:
+  TEMPLATE: template.yml
+
+  # Pro Env variables
+  PROD_APP_ENV: prod
+  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::782046926924:role/GithubActionsRole
+  STACK_TEMPLATES_BUCKET: stacks-templates-a758baa3
+  PROD_REGION: us-east-1
+
+defaults:
+  run:
+    working-directory: ./infrastructure
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  # Production Pipelines
+  deploy-prod:
+    name: Build and deploy Cloudformation resources to production environment
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ env.PROD_PIPELINE_EXECUTION_ROLE }} #change to reflect your IAM role’s ARN
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.PROD_REGION }}
+
+      - name: Check files in working directory
+        run: ls -al
+
+      - name: Upload CloudFormation template to S3 bucket
+        run: |
+          aws sync . s3://${{ env.STACK_TEMPLATES_BUCKET }} --region ${{ env.PROD_REGION }}

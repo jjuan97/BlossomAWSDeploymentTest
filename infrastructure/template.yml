@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template to Deploy Blossom Deployment Test
+
+Parameters:
+  AppName:
+    Description: Name of the application
+    Type: String
+    Default: blossom-deployment-test
+
+  AppEnv:
+    Description: Environment of the stack
+    Type: String
+    Default: dev
+
+  DBUser:
+    Description: The database admin account username
+    Type: String
+    NoEcho: "true"
+    MinLength: "1"
+    MaxLength: "16"
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+
+Resources:
+  # Create SubStacks:
+
+  # VPC, subnets and other networking resources stack
+  NetworkingStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-networking.yml
+      Parameters:
+        AppName: !Ref AppName
+        AppEnv: !Ref AppEnv
+
+  # Database stack
+  DatabaseStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkingStack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-database.yml
+      Parameters:
+        AppName: !Ref AppName
+        AppEnv: !Ref AppEnv
+        VPC: !GetAtt NetworkingStack.Outputs.VPCId
+        PrivateSubnet0: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
+        DBUser: !Ref DBUser
+        RDSSecurityGroup: !GetAtt NetworkingStack.Outputs.RDSSecurityGroup
+
+Outputs:
+  # Outputs from the Networking stack
+  VPCId:
+    Description: The ID of the VPC
+    Value: !GetAtt NetworkingStack.Outputs.VPCId
+
+  PublicSubnet0:
+    Description: The ID of the first public subnet
+    Value: !GetAtt NetworkingStack.Outputs.PublicSubnet0
+
+  PublicSubnet1:
+    Description: The ID of the second public subnet
+    Value: !GetAtt NetworkingStack.Outputs.PublicSubnet1
+
+  PrivateSubnet0:
+    Description: The ID of the first private subnet
+    Value: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
+
+  PrivateSubnet1:
+    Description: The ID of the second private subnet
+    Value: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
+
+  # Outputs from the Database stack
+  RDSInstanceEndpoint:
+    Description: The endpoint of the RDS instance
+    Value: !GetAtt DatabaseStack.Outputs.RDSInstanceEndpoint
+
+  RDSSecretArn:
+    Description: The ARN of the RDS secret
+    Value: !GetAtt DatabaseStack.Outputs.RDSSecretArn

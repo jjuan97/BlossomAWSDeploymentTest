@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for VPC and Subnets and other networking resources
+
+Parameters:
+  AppName:
+    Description: Name of the application
+    Type: String
+    Default: blossom-deployment-test
+
+  AppEnv:
+    Description: Environment of the stack
+    Type: String
+    Default: dev
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: The VPC ID where the resources will be created
+
+  PrivateSubnet0:
+    Type: AWS::EC2::Subnet::Id
+    Description: The first private subnet ID where the resources will be created
+
+  DBUser:
+    Description: The database admin account username
+    Type: String
+    NoEcho: "true"
+    MinLength: "1"
+    MaxLength: "16"
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The security group ID for the RDS instance
+
+Resources:
+  # Secrets
+  RDSSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "${AppName}-${AppEnv}-RDSSecret"
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "${DBUser}"}'
+        GenerateStringKey: password
+        PasswordLength: 16
+        ExcludePunctuation: true
+
+  # RDS
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "RDS Subnet Group"
+      SubnetIds:
+        - !Ref PrivateSubnet0
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    DependsOn:
+      - RDSSubnetGroup
+    Properties:
+      DBName: "test-local"
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Sub "{{resolve:secretsmanager:${RDSSecret}:SecretString:password}}"
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+      MultiAZ: false
+      PubliclyAccessible: false
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroup
+
+Outputs:
+  RDSInstanceEndpoint:
+    Description: The endpoint of the RDS instance
+    Value: !GetAtt RDSInstance.Endpoint.Address
+
+  RDSSecretArn:
+    Description: The ARN of the RDS secret
+    Value: !Ref RDSSecret
