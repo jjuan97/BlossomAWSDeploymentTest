@@ -45,4 +45,4 @@ jobs:
 
       - name: Upload CloudFormation template to S3 bucket
         run: |
-          aws sync . s3://${{ env.STACK_TEMPLATES_BUCKET }} --region ${{ env.PROD_REGION }}
+          aws s3 sync . s3://${{ env.STACK_TEMPLATES_BUCKET }} --region ${{ env.PROD_REGION }}
