@@ -2,4 +2,4 @@
 
 npm install
 # Start the application
-npm run start
+npm run dev
