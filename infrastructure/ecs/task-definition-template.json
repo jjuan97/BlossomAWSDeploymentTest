@@ -8,7 +8,7 @@
   "containerDefinitions": [
     {
       "name": "api-container",
-      "image": "782046926924.dkr.ecr.us-east-1.amazonaws.com/api:latest",
+      "image": "${IMAGE_URI}",
       "portMappings": [
         {
           "containerPort": 4000,
