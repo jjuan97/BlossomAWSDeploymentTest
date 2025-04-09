@@ -96,19 +96,14 @@ jobs:
             --output text)
           echo "ECR_REPOSITORY=${ECR_REPOSITORY}" >> $GITHUB_ENV
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Build and push image to ECR (amd64) to ECS with fargate
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker buildx build \
-            --platform linux/amd64 \
-            -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest \
-            --push \
-            .
+          docker build -t api .
+          docker tag api:latest $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
 
       - name: Prepare Task Definition
         env:

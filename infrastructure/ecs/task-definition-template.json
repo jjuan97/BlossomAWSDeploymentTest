@@ -4,7 +4,7 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::782046926924:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::782046926924:role/blossom-deployment-prod-ECSSta-ECSTaskExecutionRole-iJPMs1VqZTPL",
   "containerDefinitions": [
     {
       "name": "api-container",
