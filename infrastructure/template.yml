@@ -110,21 +110,21 @@ Outputs:
     Value: !GetAtt DatabaseStack.Outputs.RDSSecretArn
 
   # Outputs from the ECS stack
-  ECRRepositoryURI:
-    Description: The URI of the ECR repository
-    Value: !GetAtt ECSStack.Outputs.ECRRepositoryURI
-
-  ECRRepository:
-    Description: The name of the ECR repository
-    Value: !GetAtt ECSStack.Outputs.ECRRepository
-
-  ECSClusterName:
-    Description: The name of the ECS cluster
-    Value: !GetAtt ECSStack.Outputs.ECSClusterName
-
-  ECSServiceName:
-    Description: The name of the ECS service
-    Value: !GetAtt ECSStack.Outputs.ECSServiceName
+  #ECRRepositoryURI:
+  #  Description: The URI of the ECR repository
+  #  Value: !GetAtt ECSStack.Outputs.ECRRepositoryURI
+  #
+  #ECRRepository:
+  #  Description: The name of the ECR repository
+  #  Value: !GetAtt ECSStack.Outputs.ECRRepository
+  #
+  #ECSClusterName:
+  #  Description: The name of the ECS cluster
+  #  Value: !GetAtt ECSStack.Outputs.ECSClusterName
+  #
+  #ECSServiceName:
+  #  Description: The name of the ECS service
+  #  Value: !GetAtt ECSStack.Outputs.ECSServiceName
 
   # Outputs from the ALB stack
   ALBEndpoint:
