@@ -24,6 +24,10 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
     Description: The security group ID for the ECS service
 
+  ALBTargetGroupArn:
+    Type: String
+    Description: The ARN of the ALB target group
+
 Resources:
   # ECR Repository
   ECRRepository:
@@ -102,6 +106,10 @@ Resources:
           SecurityGroups:
             - !Ref ECSSecurityGroup
           AssignPublicIp: ENABLED
+      LoadBalancers:
+        - TargetGroupArn: !Ref ALBTargetGroupArn
+          ContainerName: api-container
+          ContainerPort: 4000
 
 Outputs:
   ECRRepositoryURI:

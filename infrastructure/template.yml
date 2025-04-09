@@ -49,20 +49,6 @@ Resources:
         DBUser: !Ref DBUser
         RDSSecurityGroup: !GetAtt NetworkingStack.Outputs.RDSSecurityGroup
 
-  # ECS stack
-  ECSStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - NetworkingStack
-    Properties:
-      TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-ecs.yml
-      Parameters:
-        AppName: !Ref AppName
-        AppEnv: !Ref AppEnv
-        PrivateSubnet0: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
-        PrivateSubnet1: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
-        ECSSecurityGroup: !GetAtt NetworkingStack.Outputs.ECSSecurityGroup
-
   # ALB stack
   ALBStack:
     Type: AWS::CloudFormation::Stack
@@ -77,6 +63,22 @@ Resources:
         PublicSubnet0: !GetAtt NetworkingStack.Outputs.PublicSubnet0
         PublicSubnet1: !GetAtt NetworkingStack.Outputs.PublicSubnet1
         ALBSecurityGroup: !GetAtt NetworkingStack.Outputs.ALBSecurityGroup
+
+  # ECS stack
+  ECSStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkingStack
+      - ALBStack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-ecs.yml
+      Parameters:
+        AppName: !Ref AppName
+        AppEnv: !Ref AppEnv
+        PrivateSubnet0: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
+        PrivateSubnet1: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
+        ECSSecurityGroup: !GetAtt NetworkingStack.Outputs.ECSSecurityGroup
+        ALBTargetGroupArn: !GetAtt ALBStack.Outputs.ALBTargetGroupARN
 
 Outputs:
   # Outputs from the Networking stack
