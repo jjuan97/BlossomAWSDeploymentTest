@@ -7,21 +7,14 @@
   "executionRoleArn": "arn:aws:iam::782046926924:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
-      "name": "api-container",
+      "name": "ecs-test-container",
       "image": "${IMAGE_URI}",
-      "portMappings": [
-        {
-          "containerPort": 4000,
-          "hostPort": 4000,
-          "protocol": "tcp"
-        }
-      ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/blossom-deployment-prod",
           "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "api"
+          "awslogs-stream-prefix": "test"
         }
       }
     }
