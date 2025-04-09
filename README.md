@@ -3,11 +3,14 @@
 This repository contains a sample application to be deployed on AWS as part of a technical test for cloud engineers.
 
 ## Table of Contents
-- [Introduction](#introduction)
-- [Prerequisites](#prerequisites)
-- [Running Locally](#running-locally)
-- [Expected Output](#expected-output)
-- [AWS Deployment](#aws-deployment)
+- [Blossom AWS Deployment Test](#blossom-aws-deployment-test)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Prerequisites](#prerequisites)
+  - [Running Locally](#running-locally)
+  - [Expected Output](#expected-output)
+    - [Application Running](#application-running)
+  - [AWS Deployment](#aws-deployment)
 
 ## Introduction
 The goal of this test is to demonstrate your ability to deploy an application using AWS services, ensuring security, scalability, and cost-efficiency.

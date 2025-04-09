@@ -1,0 +1,56 @@
+{
+  "Role": {
+    "Path": "/",
+    "RoleName": "GithubActionsRole",
+    "RoleId": "AROA3MFNBDBGKYIPPI6LV",
+    "Arn": "arn:aws:iam::782046926924:role/GithubActionsRole",
+    "CreateDate": "2025-04-08T16:08:47+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Federated": "arn:aws:iam::782046926924:oidc-provider/token.actions.githubusercontent.com"
+          },
+          "Action": "sts:AssumeRoleWithWebIdentity",
+          "Condition": {
+            "StringEquals": {
+              "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+              "token.actions.githubusercontent.com:sub": "repo:jjuan97/BlossomAWSDeploymentTest:ref:refs/heads/master"
+            }
+          }
+        }
+      ]
+    },
+    "Description": "A role to github actions assume to deploy apps",
+    "MaxSessionDuration": 3600,
+    "RoleLastUsed": {
+      "LastUsedDate": "2025-04-09T06:00:57+00:00",
+      "Region": "us-east-1"
+    },
+    "PolicyNames": ["FullAccessToSpecificServices"],
+    "AttachedPolicies": [
+      {
+        "PolicyName": "AmazonEC2ContainerRegistryFullAccess",
+        "PolicyArn": "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+      },
+      {
+        "PolicyName": "AmazonEC2FullAccess",
+        "PolicyArn": "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+      },
+      {
+        "PolicyName": "CloudWatchLogsFullAccess",
+        "PolicyArn": "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+      },
+      {
+        "PolicyName": "AmazonS3FullAccess",
+        "PolicyArn": "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+      },
+      {
+        "PolicyName": "AWSCloudFormationFullAccess",
+        "PolicyArn": "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess"
+      }
+    ]
+  }
+}
