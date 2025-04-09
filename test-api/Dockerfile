@@ -1,3 +1,12 @@
-FROM alpine:3.18
+FROM node:21
+RUN apt-get update && apt-get install -y netcat-openbsd
+WORKDIR /app
 
-CMD ["sh", "-c", "echo '✅ Contenedor funcionando en ECS' && sleep 3600"]
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+EXPOSE 4000
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
