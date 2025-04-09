@@ -114,7 +114,7 @@ jobs:
         run: |
           cd ../infrastructure/
           ls -al
-          aws ecs register-task-definition --cli-input-json file://ecs/task-definition.json
+          aws ecs register-task-definition --cli-input-json file://ecs/task-definition-prod.json
 
       - name: Update ECS Service
         run: |
