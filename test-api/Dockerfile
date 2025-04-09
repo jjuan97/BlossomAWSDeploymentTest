@@ -1,6 +1,10 @@
 FROM node:21
 RUN apt-get update && apt-get install -y netcat-openbsd
 WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
 COPY . .
 EXPOSE 4000
 COPY entrypoint.sh /entrypoint.sh
