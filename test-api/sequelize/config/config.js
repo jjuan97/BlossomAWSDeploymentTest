@@ -8,6 +8,12 @@ const basicConfig = {
   host: process.env.SEQ_HOST,
   dialect: "postgres",
   logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
+  }
 };
 
 module.exports = {
