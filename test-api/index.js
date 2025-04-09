@@ -1,7 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const {sequelize, Task}  = require("./sequelize/models");
+const { sequelize, Task } = require("./sequelize/models");
+const os = require("os");
 const app = express();
 const PORT = 4000;
 
@@ -50,12 +51,28 @@ app.delete("/tasks/:id", async (req, res) => {
   }
 });
 
+function getLocalIP() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      // Skip internal and non-IPv4 addresses
+      if (iface.family !== "IPv4" || iface.internal) {
+        continue;
+      }
+      return iface.address;
+    }
+  }
+  return "127.0.0.1"; // Fallback
+}
+
 sequelize
   .sync()
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
+    const server = app.listen(PORT, () => {
+      console.log(`Server is running`);
     });
+    const localIP = getLocalIP();
+    console.log(`Server is running on http://${localIP}:${PORT}`);
   })
   .catch((error) => {
     console.error("Unable to connect to the database:", error);
