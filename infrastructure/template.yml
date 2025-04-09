@@ -50,18 +50,18 @@ Resources:
         RDSSecurityGroup: !GetAtt NetworkingStack.Outputs.RDSSecurityGroup
 
   # ECS stack
-  ECSStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - NetworkingStack
-    Properties:
-      TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-ecs.yml
-      Parameters:
-        AppName: !Ref AppName
-        AppEnv: !Ref AppEnv
-        PrivateSubnet0: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
-        PrivateSubnet1: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
-        ECSSecurityGroup: !GetAtt NetworkingStack.Outputs.ECSSecurityGroup
+  #ECSStack:
+  #  Type: AWS::CloudFormation::Stack
+  #  DependsOn:
+  #    - NetworkingStack
+  #  Properties:
+  #    TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-ecs.yml
+  #    Parameters:
+  #      AppName: !Ref AppName
+  #      AppEnv: !Ref AppEnv
+  #      PrivateSubnet0: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
+  #      PrivateSubnet1: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
+  #      ECSSecurityGroup: !GetAtt NetworkingStack.Outputs.ECSSecurityGroup
 
   # ALB stack
   ALBStack:
