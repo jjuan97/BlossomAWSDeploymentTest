@@ -34,20 +34,20 @@ Resources:
         AppEnv: !Ref AppEnv
 
   # Database stack
-  #DatabaseStack:
-  #  Type: AWS::CloudFormation::Stack
-  #  DependsOn:
-  #    - NetworkingStack
-  #  Properties:
-  #    TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-database.yml
-  #    Parameters:
-  #      AppName: !Ref AppName
-  #      AppEnv: !Ref AppEnv
-  #      VPC: !GetAtt NetworkingStack.Outputs.VPCId
-  #      PrivateSubnet0: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
-  #      PrivateSubnet1: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
-  #      DBUser: !Ref DBUser
-  #      RDSSecurityGroup: !GetAtt NetworkingStack.Outputs.RDSSecurityGroup
+  DatabaseStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkingStack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/stacks-templates-a758baa3/template-database.yml
+      Parameters:
+        AppName: !Ref AppName
+        AppEnv: !Ref AppEnv
+        VPC: !GetAtt NetworkingStack.Outputs.VPCId
+        PrivateSubnet0: !GetAtt NetworkingStack.Outputs.PrivateSubnet0
+        PrivateSubnet1: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
+        DBUser: !Ref DBUser
+        RDSSecurityGroup: !GetAtt NetworkingStack.Outputs.RDSSecurityGroup
 
   # ECS stack
   ECSStack:
@@ -101,13 +101,13 @@ Outputs:
     Value: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
 
   # Outputs from the Database stack
-  #RDSInstanceEndpoint:
-  #  Description: The endpoint of the RDS instance
-  #  Value: !GetAtt DatabaseStack.Outputs.RDSInstanceEndpoint
+  RDSInstanceEndpoint:
+    Description: The endpoint of the RDS instance
+    Value: !GetAtt DatabaseStack.Outputs.RDSInstanceEndpoint
 
-  #RDSSecretArn:
-  #  Description: The ARN of the RDS secret
-  #  Value: !GetAtt DatabaseStack.Outputs.RDSSecretArn
+  RDSSecretArn:
+    Description: The ARN of the RDS secret
+    Value: !GetAtt DatabaseStack.Outputs.RDSSecretArn
 
   # Outputs from the ECS stack
   ECRRepositoryURI:
